@@ -439,7 +439,7 @@ window.addEventListener("load", function() {
         // Attach patient notes to every image (same patient for whole batch)
         if (window.PatientNotes) window.PatientNotes.getFormData(fd);
 
-        var res = await fetch("http://127.0.0.1:8000/predict/batch", {
+        var res = await fetch("https://onchoscan-api.onrender.com/predict/batch", {
           method: "POST",
           headers: { "Authorization": "Bearer " + tok },
           body: fd
@@ -514,7 +514,7 @@ window.addEventListener("load", function() {
       batchFiles.forEach(function(f) { fd.append("files", f.file); });
       fd.append("cancer_type", batchType);
 
-      var res = await fetch("http://127.0.0.1:8000/predict/batch/combined-pdf", {
+      var res = await fetch("https://onchoscan-api.onrender.com/predict/batch/combined-pdf", {
         method: "POST",
         headers: { "Authorization": "Bearer " + tok },
         body: fd
@@ -603,8 +603,8 @@ window.addEventListener("load", function() {
         '<div class="rc-body"><div class="rc-inner">' +
           '<div>' +
             '<div class="rc-imgs">' +
-              '<div class="rc-img-box"><img src="http://127.0.0.1:8000/' + r.original + '" alt="Original"><div class="rc-img-lbl">Original</div></div>' +
-              '<div class="rc-img-box"><img src="http://127.0.0.1:8000/' + r.heatmap  + '" alt="Grad-CAM"><div class="rc-img-lbl">Grad-CAM</div></div>' +
+              '<div class="rc-img-box"><img src="https://onchoscan-api.onrender.com/' + r.original + '" alt="Original"><div class="rc-img-lbl">Original</div></div>' +
+              '<div class="rc-img-box"><img src="https://onchoscan-api.onrender.com/' + r.heatmap  + '" alt="Grad-CAM"><div class="rc-img-lbl">Grad-CAM</div></div>' +
             '</div>' +
             '<div class="rc-probs">' + probs + '</div>' +
           '</div>' +
@@ -614,7 +614,7 @@ window.addEventListener("load", function() {
             '<div class="rc-det"><div class="rc-dk">Risk Score</div><div class="rc-dv">' + r.risk_score + ' / 100</div></div>' +
             '<div class="rc-det"><div class="rc-dk">Diagnostic</div><div class="rc-dv sm">' + diag + '</div></div>' +
             notesHtml +
-            '<a class="rc-dl" href="http://127.0.0.1:8000/' + r.report + '" target="_blank">⬇ Download PDF</a>' +
+            '<a class="rc-dl" href="https://onchoscan-api.onrender.com/' + r.report + '" target="_blank">⬇ Download PDF</a>' +
           '</div>' +
         '</div></div>' +
       '</div>';

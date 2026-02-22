@@ -9,7 +9,7 @@
    All profile data read/written to server via /profile endpoint.
 */
 (function () {
-  var API   = "http://127.0.0.1:8000";
+  var API   = "https://onchoscan-api.onrender.com";
   var token = localStorage.getItem("oncho_token");
 
   var SPECS = {
