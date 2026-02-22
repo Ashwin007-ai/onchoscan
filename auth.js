@@ -4,7 +4,7 @@ const API = "https://onchoscan-api.onrender.com";
 (function() {
   const t = localStorage.getItem("oncho_token");
   const path = window.location.pathname;
-  const onLoginPage = path.endsWith("index.html") || path.endsWith("/app/");
+  const onLoginPage = path.endsWith("login.html") || path.endsWith("/app/");
   if (t && onLoginPage) {
     window.location.replace("dashboard.html");
   }
