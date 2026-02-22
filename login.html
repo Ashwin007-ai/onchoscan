@@ -87,7 +87,7 @@ const API = "https://onchoscan-api.onrender.com";
 
 // If already logged in go straight to dashboard
 if (localStorage.getItem("oncho_token")) {
-  window.location.replace("/app/dashboard.html");
+  window.location.replace("/onchoscan/dashboard.html");
 }
 
 // Tab switching
@@ -142,7 +142,7 @@ document.getElementById("loginBtn").onclick = async function() {
     localStorage.setItem("oncho_token", data.access_token);
     localStorage.setItem("oncho_user",  data.username);
     localStorage.setItem("oncho_name",  data.full_name || data.username);
-    window.location.replace("/app/dashboard.html");
+    window.location.replace("/onchoscan/dashboard.html");
   } catch(e) {
     showError("loginError", "Cannot connect to server. Is it running?");
   }
@@ -170,7 +170,7 @@ document.getElementById("registerBtn").onclick = async function() {
     localStorage.setItem("oncho_name",  data.full_name || data.username);
     localStorage.setItem("oncho_new_user", "1");  // triggers onboarding on first dashboard visit
     showSuccess("regSuccess", "Account created! Redirecting…");
-    setTimeout(function() { window.location.replace("/app/dashboard.html"); }, 700);
+    setTimeout(function() { window.location.replace("/onchoscan/dashboard.html"); }, 700);
   } catch(e) {
     showError("regError", "Cannot connect to server. Is it running?");
   }

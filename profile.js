@@ -147,7 +147,7 @@
       var ul = $id("recentList");
       if (!ul) return;
       if (!list.length) {
-        ul.innerHTML = '<p class="prf-empty">No scans yet. <a href="/app/dashboard.html">Run your first scan →</a></p>';
+        ul.innerHTML = '<p class="prf-empty">No scans yet. <a href="/onchoscan/dashboard.html">Run your first scan →</a></p>';
         return;
       }
       ul.innerHTML = list.slice(0, 6).map(function (r) {
@@ -361,7 +361,7 @@
     function makeProfileLink(el) {
       if (!el || window.location.pathname.includes("profile")) return;
       el.style.cursor = "pointer"; el.title = "My Profile";
-      el.addEventListener("click", function(){ window.location.href = "/app/profile.html"; });
+      el.addEventListener("click", function(){ window.location.href = "/onchoscan/profile.html"; });
     }
     makeProfileLink($id("navAvatar"));
     makeProfileLink($id("navUsername"));

@@ -3,13 +3,13 @@ const token = localStorage.getItem("oncho_token");
 
 // Auth guard
 if (!token) {
-  window.location.replace("/app/index.html");
+  window.location.replace("/onchoscan/index.html");
 }
 
 // Logout
 window.logout = function() {
   localStorage.clear();
-  window.location.replace("/app/index.html");
+  window.location.replace("/onchoscan/index.html");
 };
 
 var selectedType = "brain";
@@ -47,7 +47,7 @@ window.addEventListener("load", async function() {
     if (!el) return;
     el.style.cursor = "pointer";
     el.title = "My Profile";
-    el.addEventListener("click", function(){ window.location.href = "/app/profile.html"; });
+    el.addEventListener("click", function(){ window.location.href = "/onchoscan/profile.html"; });
   }
   makeProfileLink(av);
   makeProfileLink(nm);
