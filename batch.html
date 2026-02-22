@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* Prevent theme flash on load */
+(function(){
+  if(localStorage.getItem("oncho_theme")==="light")
+    document.documentElement.classList.add("preload-light");
+})();
+</script>
+<style>
+html.preload-light body { background:#f2f8f5 !important; }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnchoScan – Batch Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="patient_notes.css">
+<style>
+/* ── Dropzone: EXACT copy from dashboard inline style ── */
+.dropzone { position: relative; }
+.dropzone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0;
+  cursor: pointer; width: 100%; height: 100%; z-index: 2;
+}
+.dropzone #batchDzContent {
+  position: relative; z-index: 1; pointer-events: none;
+}
+
+/* ── Batch layout ── */
+.batch-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media(max-width:900px){ .batch-grid { grid-template-columns: 1fr; } }
+
+/* ── Queue ── */
+.batch-queue {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 210px; overflow-y: auto;
+  margin-top: 12px;
+}
+.batch-queue::-webkit-scrollbar { width: 4px; }
+.batch-queue::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+.bq-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 9px;
+  transition: border-color 0.2s;
+}
+.bq-item.bq-running { border-color: rgba(0,212,255,0.35); }
+.bq-item.bq-done    { border-color: rgba(79,255,176,0.35); }
+.bq-item.bq-error   { border-color: rgba(255,79,123,0.35); }
+.bq-thumb { width: 32px; height: 32px; flex-shrink: 0; border-radius: 5px; object-fit: cover; border: 1px solid var(--border); }
+.bq-info  { flex: 1; min-width: 0; }
+.bq-name  { font-size: 0.74rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bq-size  { font-size: 0.65rem; color: var(--text3); }
+.bq-st    { flex-shrink: 0; font-size: 0.68rem; color: var(--text3); }
+.bq-rm    { flex-shrink: 0; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 0.88rem; padding: 2px 5px; border-radius: 4px; }
+.bq-rm:hover { color: var(--high); }
+.bq-spin  { display: inline-block; width: 10px; height: 10px; border: 2px solid rgba(0,212,255,0.2); border-top-color: var(--accent2); border-radius: 50%; animation: bqs 0.65s linear infinite; vertical-align: middle; }
+@keyframes bqs { to { transform: rotate(360deg); } }
+
+/* ── Progress bar ── */
+.bp-wrap  { margin-top: 10px; }
+.bp-top   { display: flex; justify-content: space-between; font-size: 0.71rem; color: var(--text2); margin-bottom: 5px; }
+.bp-track { height: 4px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.bp-fill  { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; width: 0%; transition: width 0.4s ease; }
+
+/* ── Combined PDF button ── */
+.btn-secondary {
+  width: 100%; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--accent2); font-family: var(--font); font-weight: 700; font-size: 0.85rem;
+  padding: 11px; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover:not(:disabled) { background: rgba(0,212,255,0.07); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Summary strip ── */
+.sum-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
+@media(max-width:580px){ .sum-strip { grid-template-columns: repeat(2,1fr); } }
+.sum-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 13px 8px; text-align: center; }
+.sum-num { font-family: var(--font); font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+.sum-lbl { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+.sum-box.s-total  .sum-num { color: var(--accent2); }
+.sum-box.s-high   .sum-num { color: var(--high); }
+.sum-box.s-medium .sum-num { color: var(--medium); }
+.sum-box.s-low    .sum-num { color: var(--low); }
+
+/* ── Result cards ── */
+.rc-list { display: flex; flex-direction: column; gap: 10px; }
+.rc { background: var(--bg2); border: 1px solid var(--border); border-radius: 13px; overflow: hidden; }
+.rc.rch { border-left: 3px solid var(--high); }
+.rc.rcm { border-left: 3px solid var(--medium); }
+.rc.rcl { border-left: 3px solid var(--low); }
+.rc.rce { border-left: 3px solid var(--text3); }
+.rc-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; }
+.rc.open .rc-head { border-bottom-color: var(--border); }
+.rc-tn   { width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
+.rc-ti   { flex: 1; min-width: 0; }
+.rc-fn   { font-family: var(--font); font-size: 0.84rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-mt   { font-size: 0.68rem; color: var(--text3); margin-top: 1px; }
+.rc-badges { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.rc-chv  { color: var(--text3); font-size: 0.78rem; transition: transform 0.25s; }
+.rc.open .rc-chv { transform: rotate(180deg); }
+.rc-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.rc.open .rc-body { max-height: 700px; }
+.rc-inner { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:580px){ .rc-inner { grid-template-columns: 1fr; } }
+.rc-imgs { display: flex; gap: 8px; }
+.rc-img-box { flex: 1; }
+.rc-img-box img { width: 100%; height: 84px; object-fit: cover; border-radius: 7px; border: 1px solid var(--border); display: block; }
+.rc-img-lbl { font-size: 0.62rem; color: var(--text3); text-align: center; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+.rc-probs { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.rc-pb-row { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; }
+.rc-pb-lbl { color: var(--text2); width: 74px; flex-shrink: 0; }
+.rc-pb-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.rc-pb-fill  { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; }
+.rc-pb-pct   { color: var(--text3); width: 30px; text-align: right; }
+.rc-dets { display: flex; flex-direction: column; gap: 8px; }
+.rc-det  { display: flex; flex-direction: column; gap: 2px; }
+.rc-dk   { font-size: 0.64rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.rc-dv   { font-family: var(--font); font-size: 0.86rem; font-weight: 600; color: var(--text); }
+.rc-dv.sm { font-size: 0.74rem; font-weight: 400; color: var(--text2); }
+.rc-dl { display: inline-flex; align-items: center; gap: 5px; font-size: 0.74rem; color: var(--accent2); text-decoration: none; font-weight: 600; padding: 5px 11px; border: 1px solid rgba(0,212,255,0.2); border-radius: 7px; margin-top: 4px; transition: background 0.15s; }
+.rc-dl:hover { background: rgba(0,212,255,0.07); }
+
+/* ── Empty state ── */
+.batch-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 56px 20px; border: 1px dashed var(--border); border-radius: 14px; text-align: center; color: var(--text3); }
+.batch-empty .be-icon { font-size: 2.2rem; opacity: 0.4; }
+.batch-empty p { font-size: 0.85rem; line-height: 1.65; }
+
+/* ── Hint strip ── */
+.batch-hint { display: flex; align-items: flex-start; gap: 7px; font-size: 0.71rem; color: var(--text3); background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; margin: 10px 0 0; }
+</style>
+</head>
+<body class="app-page">
+
+<nav class="navbar">
+  <a href="/app/dashboard.html" class="nav-brand">
+    <div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>
+    <span>OnchoScan</span>
+  </a>
+  <div class="nav-links">
+    <a href="/app/home.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>Home</a>
+    <a href="/app/dashboard.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>Predict</a>
+    <a href="/app/batch.html" class="nav-link active"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>Batch</a>
+    <a href="/app/history.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>History</a>
+    <a href="/app/about.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>About</a>
+  </div>
+  <div class="nav-user">
+        <button class="theme-toggle" id="themeToggle" type="button" title="Switch to light mode">☀️</button>
+    <button class="notif-bell" id="notifBell" type="button" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-badge" id="notifBadge"></span>
+    </button>
+    <span class="user-avatar" id="navAvatar">?</span>
+    <span id="navUsername" class="nav-uname"></span>
+    <button type="button" class="btn-logout" id="logoutBtn">Sign out</button>
+  </div>
+</nav>
+
+<main class="main-container">
+  <section class="page-hero">
+    <h1>Batch Image <em>Analysis</em></h1>
+    <p>Upload up to 20 images at once — each analyzed individually with Grad-CAM and a PDF report.</p>
+  </section>
+
+  <div class="batch-grid">
+
+    <!-- LEFT: upload panel -->
+    <div class="card upload-card" style="padding:20px">
+      <div class="card-header" style="margin-bottom:14px"><h3>Upload Images</h3></div>
+
+      <!-- Dropzone: IDENTICAL structure to dashboard.html -->
+      <div class="dropzone" id="batchDropzone">
+        <input type="file" id="batchFileInput" accept="image/*" multiple>
+        <div id="batchDzContent">
+          <div class="dz-icon"><svg viewBox="0 0 48 48" fill="none"><path d="M24 4L24 32M24 4L16 12M24 4L32 12" stroke="#4fffb0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 36v4a2 2 0 002 2h28a2 2 0 002-2v-4" stroke="#4fffb0" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+          <p class="dz-label">Drop images here or <span>browse</span></p>
+          <p class="dz-hint">JPEG · PNG · TIFF &nbsp;|&nbsp; Max 20 images</p>
+        </div>
+      </div>
+
+      <!-- Cancer type selector -->
+      <div style="margin:14px 0 6px;font-size:0.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Cancer Type</div>
+      <div class="selector-row">
+        <div class="selector-option active" id="batchOptBrain">
+          <div class="sel-icon">🧠</div>
+          <div><strong>Brain Tumor</strong><small>Glioma · Meningioma · Pituitary</small></div>
+        </div>
+        <div class="selector-option" id="batchOptSkin">
+          <div class="sel-icon">🔬</div>
+          <div><strong>Skin Cancer</strong><small>Benign · Malignant</small></div>
+        </div>
+      </div>
+
+      <div class="batch-hint">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="color:var(--accent2);flex-shrink:0;margin-top:1px"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+        All images use the same cancer type. Use separate batches for brain vs skin.
+      </div>
+
+      <!-- File queue -->
+      <div class="batch-queue hidden" id="batchQueue"></div>
+
+      <!-- Progress bar -->
+      <div class="bp-wrap hidden" id="batchProgress">
+        <div class="bp-top"><span id="bpLabel">Analyzing…</span><span id="bpCount">0 / 0</span></div>
+        <div class="bp-track"><div class="bp-fill" id="bpFill"></div></div>
+      </div>
+
+      <!-- Run button -->
+      <button type="button" id="batchRunBtn" class="btn-primary" style="margin-top:14px;width:100%;justify-content:center" disabled>
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+        <span id="batchRunLabel">Run Batch Analysis</span>
+      </button>
+
+      <!-- Combined PDF button -->
+      <button type="button" id="batchCombinedBtn" class="btn-secondary" disabled>
+        <svg viewBox="0 0 20 20" fill="currentColor" style="width:15px;height:15px"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        <span id="batchCombinedLabel">Download Combined PDF</span>
+      </button>
+    </div>
+
+    <!-- RIGHT: results -->
+    <div>
+      <div class="batch-empty" id="batchEmpty">
+        <div class="be-icon">🔬</div>
+        <p>Add images and click <strong>Run Batch Analysis</strong><br>to see per-image results here.</p>
+      </div>
+      <div class="hidden" id="batchSummary">
+        <div class="sum-strip">
+          <div class="sum-box s-total"> <div class="sum-num" id="sumTotal">0</div><div class="sum-lbl">Total</div></div>
+          <div class="sum-box s-high">  <div class="sum-num" id="sumHigh">0</div> <div class="sum-lbl">High Risk</div></div>
+          <div class="sum-box s-medium"><div class="sum-num" id="sumMed">0</div>  <div class="sum-lbl">Medium</div></div>
+          <div class="sum-box s-low">   <div class="sum-num" id="sumLow">0</div>  <div class="sum-lbl">Low Risk</div></div>
+        </div>
+        <div class="rc-list" id="rcList"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer"><div class="footer-inner">
+  <div class="footer-brand"><div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>OnchoScan</div>
+  <p class="footer-disclaimer">⚠ For research and educational use only.</p>
+  <p class="footer-copy">© 2025 OnchoScan · Powered by ResNet18 + Grad-CAM</p>
+</div></footer>
+
+<script src="app.js"></script>
+<script src="patient_notes.js"></script>
+<script src="features.js"></script>
+<script>
+// ── Batch logic runs in window.load — same as app.js — so it fires at the same time
+// ── Uses completely different element IDs from dashboard so app.js never touches them
+window.addEventListener("load", function() {
+
+  var batchFiles  = [];
+  var batchType   = "brain";
+  var isRunning   = false;
+  var MAX         = 20;
+
+  var fileInput   = document.getElementById("batchFileInput");
+  var dropzone    = document.getElementById("batchDropzone");
+  var queue       = document.getElementById("batchQueue");
+  var runBtn      = document.getElementById("batchRunBtn");
+  var runLabel    = document.getElementById("batchRunLabel");
+  var combinedBtn = document.getElementById("batchCombinedBtn");
+  var combinedLbl = document.getElementById("batchCombinedLabel");
+  var progress    = document.getElementById("batchProgress");
+  var bpFill      = document.getElementById("bpFill");
+  var bpLabel     = document.getElementById("bpLabel");
+  var bpCount     = document.getElementById("bpCount");
+  var emptyState  = document.getElementById("batchEmpty");
+  var summaryEl   = document.getElementById("batchSummary");
+  var rcList      = document.getElementById("rcList");
+  var optBrain    = document.getElementById("batchOptBrain");
+  var optSkin     = document.getElementById("batchOptSkin");
+
+  // Cancer type toggle
+  optBrain.addEventListener("click", function() {
+    batchType = "brain";
+    optBrain.classList.add("active");
+    optSkin.classList.remove("active");
+  });
+  optSkin.addEventListener("click", function() {
+    batchType = "skin";
+    optSkin.classList.add("active");
+    optBrain.classList.remove("active");
+  });
+
+  // File input change
+  fileInput.addEventListener("change", function() {
+    if (!this.files || !this.files.length) return;
+    addFiles(Array.from(this.files));
+    this.value = "";
+  });
+
+  // Drag and drop — on the dropzone div itself (same as dashboard)
+  dropzone.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = "var(--accent)";
+  });
+  dropzone.addEventListener("dragleave", function() {
+    dropzone.style.borderColor = "";
+  });
+  dropzone.addEventListener("drop", function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = "";
+    var imgs = Array.from(e.dataTransfer.files).filter(function(f) {
+      return f.type.startsWith("image/");
+    });
+    if (imgs.length) addFiles(imgs);
+  });
+
+  // Run button
+  runBtn.addEventListener("click", function() {
+    if (!isRunning) runBatch();
+  });
+
+  // Combined PDF button
+  combinedBtn.addEventListener("click", downloadCombinedPDF);
+
+  // Add files to queue
+  function addFiles(newFiles) {
+    var slots = MAX - batchFiles.length;
+    if (slots <= 0) { alert("Maximum " + MAX + " images already added."); return; }
+    var adding = newFiles.slice(0, slots);
+    if (newFiles.length > slots) alert("Only " + slots + " slot(s) left — added first " + slots + ".");
+    adding.forEach(function(f) {
+      batchFiles.push({
+        file: f,
+        uid: "bf" + Date.now() + Math.floor(Math.random() * 99999),
+        preview: URL.createObjectURL(f)
+      });
+    });
+    renderQueue();
+  }
+
+  // Remove file
+  window._bqRemove = function(uid) {
+    batchFiles = batchFiles.filter(function(f) { return f.uid !== uid; });
+    renderQueue();
+  };
+
+  function fmtBytes(b) {
+    if (b < 1024) return b + " B";
+    if (b < 1048576) return (b/1024).toFixed(1) + " KB";
+    return (b/1048576).toFixed(1) + " MB";
+  }
+
+  function renderQueue() {
+    if (!batchFiles.length) {
+      queue.classList.add("hidden");
+      runBtn.disabled = true;
+      combinedBtn.disabled = true;
+      runLabel.textContent = "Run Batch Analysis";
+      return;
+    }
+    queue.classList.remove("hidden");
+    runBtn.disabled = false;
+    combinedBtn.disabled = false;
+    runLabel.textContent = "Run Batch Analysis (" + batchFiles.length + ")";
+
+    queue.innerHTML = batchFiles.map(function(f) {
+      return '<div class="bq-item" id="bqrow_' + f.uid + '">' +
+        '<img class="bq-thumb" src="' + f.preview + '" alt="">' +
+        '<div class="bq-info">' +
+          '<div class="bq-name">' + esc(f.file.name) + '</div>' +
+          '<div class="bq-size">' + fmtBytes(f.file.size) + '</div>' +
+        '</div>' +
+        '<div class="bq-st" id="bqst_' + f.uid + '">Queued</div>' +
+        '<button class="bq-rm" onclick="window._bqRemove(\'' + f.uid + '\')" title="Remove">✕</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  function setStatus(uid, html, cls) {
+    var st  = document.getElementById("bqst_" + uid);
+    var row = document.getElementById("bqrow_" + uid);
+    if (st) st.innerHTML = html;
+    if (row) {
+      row.classList.remove("bq-running", "bq-done", "bq-error");
+      if (cls) row.classList.add(cls);
+    }
+  }
+
+  async function runBatch() {
+    var tok = localStorage.getItem("oncho_token");
+    if (!tok) { window.logout(); return; }
+
+    isRunning = true;
+    runBtn.disabled = true;
+    runLabel.textContent = "Analyzing…";
+    progress.classList.remove("hidden");
+    bpFill.style.width = "0%";
+
+    emptyState.classList.add("hidden");
+    summaryEl.classList.remove("hidden");
+    rcList.innerHTML = "";
+
+    var total = batchFiles.length;
+    document.getElementById("sumTotal").textContent = total;
+    document.getElementById("sumHigh").textContent  = "–";
+    document.getElementById("sumMed").textContent   = "–";
+    document.getElementById("sumLow").textContent   = "–";
+
+    batchFiles.forEach(function(f) { setStatus(f.uid, "Queued", ""); });
+
+    var allResults = [];
+
+    // Capture patient note fields once (same for all images in batch)
+    var batchNotes = {
+      patient_name:     (document.getElementById("pnName") || {}).value || "",
+      patient_age:      (document.getElementById("pnAge")  || {}).value || "",
+      patient_sex:      (document.getElementById("pnSex")  || {}).value || "",
+      patient_note:     (document.getElementById("pnNote") || {}).value || "",
+      patient_symptoms: Array.from(document.querySelectorAll(".pn-chip.on")).map(function(c){ return c.textContent.trim(); }).join(", ")
+    };
+
+    for (var i = 0; i < batchFiles.length; i++) {
+      var f = batchFiles[i];
+      setStatus(f.uid, '<div class="bq-spin"></div>', "bq-running");
+      bpLabel.textContent = "Analyzing " + (i + 1) + " of " + total;
+      bpCount.textContent = i + " / " + total;
+      bpFill.style.width  = (i / total * 100) + "%";
+
+      try {
+        var fd = new FormData();
+        fd.append("files", f.file);
+        fd.append("cancer_type", batchType);
+        // Attach patient notes to every image (same patient for whole batch)
+        if (window.PatientNotes) window.PatientNotes.getFormData(fd);
+
+        var res = await fetch("http://127.0.0.1:8000/predict/batch", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + tok },
+          body: fd
+        });
+        if (res.status === 401) { window.logout(); return; }
+        var data = await res.json();
+        var r = data.results[0];
+        r.preview = f.preview;
+        r.error ? setStatus(f.uid, "❌", "bq-error") : setStatus(f.uid, "✅", "bq-done");
+        allResults.push(r);
+        appendCard(r, i, batchNotes);
+
+        // Per-scan high-risk toast
+        if (!r.error && r.risk_level === "High Risk" && window.Toast) {
+          window.Toast.error("High Risk Detected", f.file.name + " · " + r.prediction, 5000);
+        }
+      } catch(err) {
+        var er = { filename: f.file.name, error: err.message, preview: f.preview };
+        setStatus(f.uid, "❌", "bq-error");
+        allResults.push(er);
+        appendCard(er, i, batchNotes);
+      }
+    }
+
+    bpFill.style.width  = "100%";
+    bpCount.textContent = total + " / " + total;
+    bpLabel.textContent = "✅ Complete!";
+
+    var cH = allResults.filter(function(r){ return r.risk_level === "High Risk"; }).length;
+    var cM = allResults.filter(function(r){ return r.risk_level === "Medium Risk"; }).length;
+    var cL = allResults.filter(function(r){ return r.risk_level === "Low Risk"; }).length;
+    document.getElementById("sumHigh").textContent = cH;
+    document.getElementById("sumMed").textContent  = cM;
+    document.getElementById("sumLow").textContent  = cL;
+
+    // Toast pop-up
+    if (window.Toast) {
+      cH > 0 ? window.Toast.error("Batch Done", cH + " high-risk scan(s) detected!")
+              : window.Toast.success("Batch Done", total + " scans complete, " + cH + " high / " + cM + " medium / " + cL + " low risk.");
+    }
+
+    // Bell panel notification
+    if (window.NotifPanel) {
+      var bIcon  = cH > 0 ? "🚨" : cM > 0 ? "⚠️" : "✅";
+      var bTitle = "Batch Analysis Complete";
+      var bMsg   = total + " scans · " + cH + " High · " + cM + " Medium · " + cL + " Low Risk";
+      window.NotifPanel.add(bTitle, bMsg, bIcon);
+    }
+
+    // Extra alert if any high-risk in batch
+    if (cH > 0 && window.Toast) {
+      setTimeout(function() {
+        window.Toast.error("⚠️ " + cH + " High Risk Result" + (cH > 1 ? "s" : ""), "Review flagged scans immediately.", 7000);
+      }, 800);
+    }
+
+    isRunning = false;
+    runBtn.disabled = false;
+    runLabel.textContent = "Run New Batch";
+  }
+
+  async function downloadCombinedPDF() {
+    if (!batchFiles.length) return;
+    var tok = localStorage.getItem("oncho_token");
+    if (!tok) { window.logout(); return; }
+
+    combinedBtn.disabled = true;
+    combinedLbl.textContent = "Generating PDF…";
+
+    try {
+      var fd = new FormData();
+      batchFiles.forEach(function(f) { fd.append("files", f.file); });
+      fd.append("cancer_type", batchType);
+
+      var res = await fetch("http://127.0.0.1:8000/predict/batch/combined-pdf", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + tok },
+        body: fd
+      });
+      if (res.status === 401) { window.logout(); return; }
+      if (!res.ok) throw new Error("Server error " + res.status);
+
+      var blob = await res.blob();
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement("a");
+      a.href = url; a.download = "OnchoScan_Batch_Report.pdf";
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (window.Toast) window.Toast.success("Downloaded", "Combined PDF saved.");
+      if (window.NotifPanel) window.NotifPanel.add("Report Downloaded", "Combined batch PDF report saved to your device.", "📄");
+    } catch(err) {
+      if (window.Toast) window.Toast.error("PDF Error", err.message);
+      else alert("Error: " + err.message);
+    }
+
+    combinedBtn.disabled = false;
+    combinedLbl.textContent = "Download Combined PDF";
+  }
+
+  function appendCard(r, idx, notes) {
+    var id = "rc_" + idx;
+    if (r.error) {
+      rcList.innerHTML += '<div class="rc rce" id="' + id + '">' +
+        '<div class="rc-head"><div style="width:38px;height:38px;flex-shrink:0;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center">⚠️</div>' +
+        '<div class="rc-ti"><div class="rc-fn">' + esc(r.filename||"Unknown") + '</div>' +
+        '<div class="rc-mt" style="color:var(--high)">' + esc(r.error) + '</div></div></div></div>';
+      return;
+    }
+    var rcCls  = r.risk_level === "High Risk" ? "rch" : r.risk_level === "Medium Risk" ? "rcm" : "rcl";
+    var bdgCls = r.risk_level === "High Risk" ? "high" : r.risk_level === "Medium Risk" ? "medium" : "low";
+    var diag   = (r.diagnostic_text||"").replace(/<[^>]+>/g,"");
+    var probs  = "";
+    if (r.class_probabilities) {
+      Object.entries(r.class_probabilities).sort(function(a,b){return b[1]-a[1];}).forEach(function(e) {
+        probs += '<div class="rc-pb-row"><span class="rc-pb-lbl">' + esc(e[0]) + '</span>' +
+          '<div class="rc-pb-track"><div class="rc-pb-fill" style="width:' + e[1] + '%"></div></div>' +
+          '<span class="rc-pb-pct">' + e[1] + '%</span></div>';
+      });
+    }
+
+    // Build patient notes block
+    var notesHtml = "";
+    if (notes) {
+      var hasNotes = notes.patient_name || notes.patient_age || notes.patient_sex || notes.patient_symptoms || notes.patient_note;
+      if (hasNotes) {
+        notesHtml += '<div class="pn-result-card" style="margin-top:10px">';
+        // Meta row
+        var meta = [];
+        if (notes.patient_name) meta.push({ k:"Name",   v: esc(notes.patient_name) });
+        if (notes.patient_age)  meta.push({ k:"Age",    v: esc(notes.patient_age) + " yrs" });
+        if (notes.patient_sex)  meta.push({ k:"Sex",    v: esc(notes.patient_sex) });
+        if (meta.length) {
+          notesHtml += '<div class="pn-result-meta">';
+          meta.forEach(function(m){ notesHtml += '<div class="pn-meta-item"><span class="pn-meta-key">' + m.k + '</span><span class="pn-meta-val">' + m.v + '</span></div>'; });
+          notesHtml += '</div>';
+        }
+        // Symptoms
+        if (notes.patient_symptoms) {
+          var syms = notes.patient_symptoms.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+          if (syms.length) {
+            notesHtml += '<div class="pn-result-symptoms">';
+            syms.forEach(function(s){ notesHtml += '<span class="pn-sym-chip">' + esc(s) + '</span>'; });
+            notesHtml += '</div>';
+          }
+        }
+        // Note text
+        if (notes.patient_note) notesHtml += '<p class="pn-result-note">' + esc(notes.patient_note) + '</p>';
+        notesHtml += '</div>';
+      }
+    }
+
+    rcList.innerHTML +=
+      '<div class="rc ' + rcCls + '" id="' + id + '">' +
+        '<div class="rc-head" onclick="document.getElementById(\'' + id + '\').classList.toggle(\'open\')">' +
+          '<img class="rc-tn" src="' + r.preview + '" alt="">' +
+          '<div class="rc-ti"><div class="rc-fn">' + esc(r.filename||"Image") + '</div>' +
+          '<div class="rc-mt">' + (r.cancer_type||"").toUpperCase() + ' · ' + r.confidence + '% confidence</div></div>' +
+          '<div class="rc-badges"><span class="risk-badge ' + bdgCls + '">' + r.risk_level + '</span><span class="rc-chv">▾</span></div>' +
+        '</div>' +
+        '<div class="rc-body"><div class="rc-inner">' +
+          '<div>' +
+            '<div class="rc-imgs">' +
+              '<div class="rc-img-box"><img src="http://127.0.0.1:8000/' + r.original + '" alt="Original"><div class="rc-img-lbl">Original</div></div>' +
+              '<div class="rc-img-box"><img src="http://127.0.0.1:8000/' + r.heatmap  + '" alt="Grad-CAM"><div class="rc-img-lbl">Grad-CAM</div></div>' +
+            '</div>' +
+            '<div class="rc-probs">' + probs + '</div>' +
+          '</div>' +
+          '<div class="rc-dets">' +
+            '<div class="rc-det"><div class="rc-dk">Prediction</div><div class="rc-dv">' + cap(r.prediction) + '</div></div>' +
+            '<div class="rc-det"><div class="rc-dk">Confidence</div><div class="rc-dv">' + r.confidence + '%</div></div>' +
+            '<div class="rc-det"><div class="rc-dk">Risk Score</div><div class="rc-dv">' + r.risk_score + ' / 100</div></div>' +
+            '<div class="rc-det"><div class="rc-dk">Diagnostic</div><div class="rc-dv sm">' + diag + '</div></div>' +
+            notesHtml +
+            '<a class="rc-dl" href="http://127.0.0.1:8000/' + r.report + '" target="_blank">⬇ Download PDF</a>' +
+          '</div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function esc(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function cap(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : ""; }
+
+}); // end window.load
+</script>
+</body>
+</html>

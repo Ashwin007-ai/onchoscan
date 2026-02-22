@@ -1,0 +1,215 @@
+/* ═══════════════════════════════════════════════════════════
+   OnchoScan — patient_notes.css
+   ═══════════════════════════════════════════════════════════ */
+
+.pn-section {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.pn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.pn-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pn-header-left h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.pn-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text3);
+  background: var(--bg3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pn-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.pn-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.pn-toggle svg { width: 12px; height: 12px; transition: transform 0.25s; }
+.pn-toggle.open svg { transform: rotate(180deg); }
+
+.pn-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.pn-body.open {
+  max-height: 700px;
+  opacity: 1;
+}
+
+.pn-row3 {
+  display: grid;
+  grid-template-columns: 1fr 70px 90px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pn-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pn-field input,
+.pn-field select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.pn-field input::placeholder { color: var(--text3); }
+.pn-field input:focus,
+.pn-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,255,176,0.1);
+}
+.pn-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a6980' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+.pn-field select option { background: var(--bg2); color: var(--text); }
+
+.pn-textarea-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+.pn-textarea-wrap label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+#pnNote {
+  width: 100%;
+  min-height: 80px;
+  max-height: 180px;
+  padding: 9px 11px 26px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#pnNote::placeholder { color: var(--text3); }
+#pnNote:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,255,176,0.1);
+}
+.pn-char {
+  position: absolute;
+  bottom: 8px; right: 10px;
+  font-size: 0.67rem;
+  color: var(--text3);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.pn-char.warn { color: var(--medium); }
+.pn-char.over { color: var(--high); }
+
+.pn-chips-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 7px;
+}
+.pn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pn-chip {
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.pn-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,255,176,0.06); }
+.pn-chip.on    { background: rgba(79,255,176,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+/* ── Result display card ── */
+.pn-result-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.pn-result-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px; }
+.pn-meta-item   { display: flex; flex-direction: column; gap: 2px; }
+.pn-meta-key    { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+.pn-meta-val    { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.pn-result-symptoms { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.pn-sym-chip {
+  padding: 3px 9px;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.22);
+  border-radius: 12px;
+  font-size: 0.72rem;
+  color: var(--accent2);
+  font-weight: 500;
+}
+.pn-result-note  { font-size: 0.83rem; color: var(--text2); line-height: 1.6; margin: 0; white-space: pre-wrap; word-break: break-word; }
+.pn-result-empty { font-size: 0.82rem; color: var(--text3); font-style: italic; }

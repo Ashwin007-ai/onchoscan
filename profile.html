@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Theme flash prevention (must be first) -->
+  <script>(function(){if(localStorage.getItem("oncho_theme")==="light")document.documentElement.classList.add("preload-light");}());</script>
+  <style>html.preload-light body{background:#f2f8f5!important;}</style>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>OnchoScan — My Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- ════════════════════════════════════════════════════════
+       PROFILE-SPECIFIC STYLES (fully self-contained)
+       Uses CSS vars from style.css; falls back to hard values
+  ════════════════════════════════════════════════════════ -->
+  <style>
+  /* ── page wrapper ── */
+  .prf-page {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 36px 28px 100px;
+  }
+  .prf-hero { margin-bottom: 32px; }
+  .prf-hero h1 {
+    font-family: var(--serif, 'DM Serif Display', serif);
+    font-size: 2.6rem; font-weight: 400;
+    color: var(--text, #e8f4ff);
+    line-height: 1.15; letter-spacing: -.01em;
+  }
+  .prf-hero h1 em { font-style: italic; color: var(--accent, #4fffb0); }
+  .prf-hero p { font-size: .97rem; color: var(--text2, #8bacc8); margin-top: 8px; }
+
+  /* ── two-column grid ── */
+  .prf-grid {
+    display: grid;
+    grid-template-columns: 272px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+
+  /* ══════════════════════════════════════════
+     SIDEBAR CARD
+  ══════════════════════════════════════════ */
+  .prf-sidebar {
+    background: var(--surface, #111f35);
+    border: 1px solid var(--border, rgba(79,255,176,.12));
+    border-radius: var(--radius-lg, 20px);
+    padding: 28px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 80px;
+  }
+
+  /* avatar */
+  .prf-av-wrap { position: relative; width: 100px; height: 100px; }
+  .prf-av-circle {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent,#4fffb0) 0%, var(--accent2,#00d4ff) 100%);
+    border: 3px solid rgba(79,255,176,.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--btn-fg, #050d15);
+    overflow: hidden; cursor: pointer; user-select: none;
+    transition: border-color .2s;
+  }
+  .prf-av-wrap:hover .prf-av-circle { border-color: var(--accent, #4fffb0); }
+  .prf-av-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+
+  /* CRITICAL: hide the file input completely */
+  #avInput { display: none !important; width: 0 !important; height: 0 !important; opacity: 0 !important; position: absolute !important; }
+
+  .prf-av-btn {
+    position: absolute; bottom: 3px; right: 3px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent, #4fffb0);
+    border: 2.5px solid var(--bg, #050d15);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.5);
+  }
+  .prf-av-btn:hover { transform: scale(1.12); }
+  .prf-av-btn svg { width: 13px; height: 13px; fill: var(--btn-fg, #050d15); display: block; }
+
+  /* name + handle */
+  .prf-sd-name {
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--text, #e8f4ff);
+    text-align: center;
+  }
+  .prf-sd-handle {
+    font-size: .78rem; color: var(--text3, #4a6980);
+    text-align: center; margin-top: -10px;
+  }
+
+  /* role badge */
+  .prf-role-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 13px; border-radius: 20px;
+    font-size: .7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+  .prf-role-doctor     { background: rgba(0,212,255,.13); color: #00d4ff; border: 1px solid rgba(0,212,255,.28); }
+  .prf-role-patient    { background: rgba(79,255,176,.13); color: var(--accent,#4fffb0); border: 1px solid rgba(79,255,176,.28); }
+  .prf-role-researcher { background: rgba(255,184,79,.13); color: #ffb84f; border: 1px solid rgba(255,184,79,.28); }
+  .prf-role-other, .prf-role-       { background: rgba(255,255,255,.06); color: var(--text2,#8bacc8); border: 1px solid rgba(255,255,255,.1); }
+
+  /* stat tiles */
+  .prf-tiles {
+    width: 100%; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .prf-tile {
+    background: var(--bg2, #0a1628);
+    border: 1px solid var(--border, rgba(79,255,176,.12));
+    border-radius: 11px; padding: 12px 8px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    transition: border-color .2s;
+  }
+  .prf-tile:hover { border-color: var(--border2, rgba(79,255,176,.25)); }
+  .prf-tile-num { font-size: 1.45rem; font-weight: 800; color: var(--accent,#4fffb0); letter-spacing: -.04em; line-height: 1; }
+  .prf-tile-lbl { font-size: .62rem; color: var(--text3,#4a6980); text-transform: uppercase; letter-spacing: .06em; text-align: center; }
+
+  /* member since */
+  .prf-since {
+    font-size: .74rem; color: var(--text3,#4a6980);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .prf-since svg { width: 13px; height: 13px; opacity: .55; flex-shrink: 0; }
+
+  /* side nav */
+  .prf-sidenav {
+    width: 100%; border-top: 1px solid var(--border,rgba(79,255,176,.12));
+    padding-top: 14px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .prf-tab {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    font-family: var(--font, 'Space Grotesk', sans-serif);
+    font-size: .86rem; font-weight: 500;
+    color: var(--text2,#8bacc8);
+    background: none; border: none; cursor: pointer;
+    width: 100%; text-align: left;
+    transition: background .15s, color .15s;
+  }
+  .prf-tab:hover { background: var(--surface2,rgba(255,255,255,.04)); color: var(--text,#e8f4ff); }
+  .prf-tab.is-active { background: rgba(79,255,176,.09); color: var(--accent,#4fffb0); font-weight: 700; }
+  .prf-tab-ico {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 1rem;
+    background: rgba(255,255,255,.04);
+    transition: background .15s;
+    line-height: 1;
+  }
+  .prf-tab.is-active .prf-tab-ico { background: rgba(79,255,176,.12); }
+  .prf-tab-danger { color: var(--accent3,#ff4f7b) !important; }
+  .prf-tab-danger:hover { background: rgba(255,79,123,.07) !important; }
+  .prf-tab-danger.is-active { background: rgba(255,79,123,.1) !important; }
+
+  /* ══════════════════════════════════════════
+     PANELS (right column)
+  ══════════════════════════════════════════ */
+  .prf-panels { display: flex; flex-direction: column; }
+  .prf-panel { display: none; flex-direction: column; gap: 18px; }
+  .prf-panel.is-active { display: flex; animation: pnlIn .25s ease both; }
+  @keyframes pnlIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* card */
+  .prf-card {
+    background: var(--surface,#111f35);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: var(--radius-lg,20px);
+    padding: 26px 28px;
+    transition: border-color .2s;
+  }
+  .prf-card-head { margin-bottom: 20px; }
+  .prf-card-head h3 { font-size: 1rem; font-weight: 700; color: var(--text,#e8f4ff); }
+  .prf-card-head p  { font-size: .78rem; color: var(--text3,#4a6980); margin-top: 3px; }
+  .prf-card-head-row {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px; margin-bottom: 20px;
+  }
+  .prf-card-head-row h3 { font-size: 1rem; font-weight: 700; color: var(--text,#e8f4ff); }
+  .prf-card-head-row p  { font-size: .78rem; color: var(--text3,#4a6980); margin-top: 3px; }
+
+  /* ── overview big stats ── */
+  .prf-bigstats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .prf-bstat {
+    text-align: center; padding: 22px 12px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: 14px;
+    transition: border-color .2s, transform .2s;
+  }
+  .prf-bstat:hover { border-color: var(--border2,rgba(79,255,176,.28)); transform: translateY(-2px); }
+  .prf-bstat-num { font-size: 2.4rem; font-weight: 800; letter-spacing: -.05em; line-height: 1; margin-bottom: 7px; }
+  .prf-bstat-num.c-green { color: var(--accent,#4fffb0); }
+  .prf-bstat-num.c-red   { color: var(--accent3,#ff4f7b); }
+  .prf-bstat-num.c-cyan  { color: var(--accent2,#00d4ff); }
+  .prf-bstat-lbl { font-size: .7rem; color: var(--text3,#4a6980); text-transform: uppercase; letter-spacing: .07em; }
+
+  /* ── activity list ── */
+  .prf-act-row {
+    display: flex; align-items: center; gap: 13px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .prf-act-row:last-child { border-bottom: none; }
+  .prf-act-ico {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0; line-height: 1;
+  }
+  .prf-act-high { background: rgba(255,79,123,.12); }
+  .prf-act-med  { background: rgba(255,184,79,.12); }
+  .prf-act-low  { background: rgba(79,255,176,.12); }
+  .prf-act-info { flex: 1; min-width: 0; }
+  .prf-act-name { font-size: .86rem; font-weight: 600; color: var(--text,#e8f4ff); text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prf-act-meta { font-size: .73rem; color: var(--text3,#4a6980); margin-top: 1px; }
+  .prf-chip { font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+  .prf-chip-high { background: rgba(255,79,123,.13); color: var(--accent3,#ff4f7b); }
+  .prf-chip-med  { background: rgba(255,184,79,.13); color: #ffb84f; }
+  .prf-chip-low  { background: rgba(79,255,176,.12); color: var(--accent,#4fffb0); }
+  .prf-empty { font-size: .86rem; color: var(--text3,#4a6980); padding: 12px 0; }
+
+  /* ── quick links ── */
+  .prf-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .prf-ql {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: 13px;
+    text-decoration: none; color: var(--text,#e8f4ff);
+    font-size: .88rem; font-weight: 600;
+    transition: border-color .18s, transform .18s;
+  }
+  .prf-ql:hover { border-color: var(--border2,rgba(79,255,176,.28)); transform: translateY(-1px); }
+  .prf-ql-ico { font-size: 1.4rem; line-height: 1; }
+
+  /* ══════════════════════════════════════════
+     PERSONAL FORM
+  ══════════════════════════════════════════ */
+  .prf-form { display: flex; flex-direction: column; gap: 16px; }
+  .prf-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .prf-field { display: flex; flex-direction: column; gap: 6px; }
+  .prf-field label {
+    display: block; font-size: .71rem; font-weight: 700;
+    color: var(--text3,#4a6980);
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .prf-inp {
+    display: block; width: 100%; padding: 11px 13px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.15));
+    border-radius: 10px; color: var(--text,#e8f4ff);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; line-height: 1.4; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .prf-inp::placeholder { color: var(--text3,#4a6980); opacity: .5; }
+  .prf-inp:focus { border-color: var(--accent,#4fffb0); box-shadow: 0 0 0 3px rgba(79,255,176,.1); }
+  .prf-inp[readonly] { opacity: .42; cursor: not-allowed; }
+  .prf-textarea { resize: vertical; min-height: 90px; max-height: 180px; line-height: 1.55; }
+  select.prf-inp {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a6980' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 13px center;
+    padding-right: 34px; cursor: pointer;
+  }
+  select.prf-inp option { background: var(--bg2,#0a1628); color: var(--text,#e8f4ff); }
+
+  /* specialization chips */
+  .prf-spec-sec { display: none; flex-direction: column; gap: 8px; }
+  .prf-spec-sec label { display: block; font-size: .71rem; font-weight: 700; color: var(--text3,#4a6980); text-transform: uppercase; letter-spacing: .05em; }
+  .prf-spec-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+  .prf-spec-chip {
+    padding: 5px 13px; border-radius: 20px;
+    border: 1px solid var(--border,rgba(79,255,176,.2));
+    background: transparent; color: var(--text2,#8bacc8);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .75rem; font-weight: 500;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .prf-spec-chip:hover { border-color: var(--accent,#4fffb0); color: var(--accent,#4fffb0); background: rgba(79,255,176,.06); }
+  .prf-spec-chip.on { background: rgba(79,255,176,.13); border-color: var(--accent,#4fffb0); color: var(--accent,#4fffb0); font-weight: 700; }
+
+  /* save row */
+  .prf-save-row {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+    padding-top: 6px; flex-wrap: wrap;
+  }
+  .prf-save-ok {
+    display: none; align-items: center; gap: 7px;
+    padding: 9px 14px;
+    background: rgba(79,255,176,.1); border: 1px solid rgba(79,255,176,.25);
+    border-radius: 8px; font-size: .82rem;
+    color: var(--accent,#4fffb0); font-weight: 600;
+  }
+  .btn-prf-save {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 24px;
+    background: var(--accent,#4fffb0); color: var(--btn-fg,#050d15);
+    border: none; border-radius: 10px;
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; font-weight: 700; cursor: pointer;
+    transition: filter .18s, transform .18s;
+  }
+  .btn-prf-save:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn-prf-save:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  /* ══════════════════════════════════════════
+     PREFERENCE TOGGLES
+  ══════════════════════════════════════════ */
+  .prf-pref-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 17px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: 12px; margin-bottom: 10px;
+    transition: border-color .2s;
+  }
+  .prf-pref-row:last-child { margin-bottom: 0; }
+  .prf-pref-row:hover { border-color: var(--border2,rgba(79,255,176,.25)); }
+  .prf-pref-info h4 { font-size: .88rem; font-weight: 700; color: var(--text,#e8f4ff); }
+  .prf-pref-info p  { font-size: .73rem; color: var(--text3,#4a6980); margin-top: 2px; line-height: 1.4; }
+
+  /* iOS-style toggle */
+  .prf-sw { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+  .prf-sw input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .prf-sw-track {
+    position: absolute; inset: 0; cursor: pointer;
+    background: var(--bg3,#0f2040);
+    border: 1px solid var(--border,rgba(79,255,176,.18));
+    border-radius: 13px; transition: background .22s, border-color .22s;
+  }
+  .prf-sw-track::before {
+    content: ""; position: absolute;
+    width: 18px; height: 18px; left: 3px; top: 3px;
+    border-radius: 50%; background: var(--text3,#4a6980);
+    transition: transform .22s, background .22s;
+  }
+  .prf-sw input:checked + .prf-sw-track { background: rgba(79,255,176,.2); border-color: var(--accent,#4fffb0); }
+  .prf-sw input:checked + .prf-sw-track::before { transform: translateX(20px); background: var(--accent,#4fffb0); }
+
+  /* ══════════════════════════════════════════
+     SECURITY ROWS
+  ══════════════════════════════════════════ */
+  .prf-sec-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 17px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: 12px; margin-bottom: 10px; gap: 12px;
+    transition: border-color .2s;
+  }
+  .prf-sec-row:last-child { margin-bottom: 0; }
+  .prf-sec-row:hover { border-color: var(--border2,rgba(79,255,176,.25)); }
+  .prf-sec-left { display: flex; align-items: center; gap: 13px; }
+  .prf-sec-icon {
+    width: 40px; height: 40px; border-radius: 11px;
+    background: var(--surface,#111f35);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .prf-sec-icon svg { width: 18px; height: 18px; display: block; }
+  .prf-sec-title { font-size: .88rem; font-weight: 700; color: var(--text,#e8f4ff); }
+  .prf-sec-sub   { font-size: .73rem; color: var(--text3,#4a6980); margin-top: 1px; }
+  .prf-status-ok   { font-size: .72rem; font-weight: 700; color: var(--accent,#4fffb0); white-space: nowrap; }
+  .prf-status-warn { font-size: .72rem; font-weight: 700; color: #ffb84f; white-space: nowrap; }
+
+  .btn-prf-ghost {
+    padding: 8px 17px; background: transparent;
+    border: 1px solid var(--border2,rgba(79,255,176,.25));
+    border-radius: 8px; color: var(--text2,#8bacc8);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: border-color .18s, color .18s;
+  }
+  .btn-prf-ghost:hover { border-color: var(--accent,#4fffb0); color: var(--accent,#4fffb0); }
+  .btn-prf-ghost:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* ══════════════════════════════════════════
+     DANGER ZONE
+  ══════════════════════════════════════════ */
+  .prf-danger-zone {
+    background: rgba(255,79,123,.04);
+    border: 1px solid rgba(255,79,123,.25);
+    border-radius: 16px; padding: 22px;
+  }
+  .prf-danger-zone > h4 {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .92rem; font-weight: 700;
+    color: var(--accent3,#ff4f7b); margin-bottom: 16px;
+  }
+  .prf-danger-zone > h4 svg { width: 17px; height: 17px; display: block; flex-shrink: 0; }
+
+  .prf-danger-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid rgba(255,79,123,.18);
+    border-radius: 11px; margin-bottom: 10px; gap: 14px;
+  }
+  .prf-danger-row:last-child { margin-bottom: 0; }
+  .prf-danger-row h5 { font-size: .88rem; font-weight: 700; color: var(--text,#e8f4ff); margin-bottom: 3px; }
+  .prf-danger-row p  { font-size: .74rem; color: var(--text3,#4a6980); line-height: 1.45; }
+
+  .prf-data-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.12));
+    border-radius: 11px; gap: 14px;
+  }
+  .prf-data-row h5 { font-size: .88rem; font-weight: 700; color: var(--text,#e8f4ff); margin-bottom: 3px; }
+  .prf-data-row p  { font-size: .74rem; color: var(--text3,#4a6980); line-height: 1.45; }
+
+  .btn-prf-danger {
+    padding: 9px 17px; background: transparent;
+    border: 1px solid rgba(255,79,123,.45);
+    border-radius: 8px; color: var(--accent3,#ff4f7b);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .82rem; font-weight: 700; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+    transition: background .18s, border-color .18s;
+  }
+  .btn-prf-danger:hover { background: rgba(255,79,123,.1); border-color: var(--accent3,#ff4f7b); }
+
+  /* ══════════════════════════════════════════
+     MODALS  ← fixed overlay, NOT inline
+  ══════════════════════════════════════════ */
+  .prf-modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 99990;
+    background: rgba(0,0,0,.78);
+    backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .prf-modal-overlay.prf-open {
+    display: flex;
+    animation: mOverIn .18s ease both;
+  }
+  @keyframes mOverIn { from{opacity:0} to{opacity:1} }
+
+  .prf-modal {
+    background: var(--surface,#111f35);
+    border: 1px solid var(--border2,rgba(79,255,176,.22));
+    border-radius: 22px; padding: 34px;
+    width: 100%; max-width: 440px;
+    box-shadow: var(--shadow-lg,0 40px 100px rgba(0,0,0,.7));
+    animation: mBoxUp .25s cubic-bezier(.34,1.2,.64,1) both;
+  }
+  .prf-modal.prf-modal-danger { border-color: rgba(255,79,123,.35); }
+  @keyframes mBoxUp { from{transform:translateY(22px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .prf-modal-ico {
+    width: 58px; height: 58px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; font-size: 1.8rem; line-height: 1;
+  }
+  .prf-modal-ico.green { background: rgba(79,255,176,.13); }
+  .prf-modal-ico.red   { background: rgba(255,79,123,.14); }
+
+  .prf-modal h3 {
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--text,#e8f4ff);
+    text-align: center; margin-bottom: 8px;
+  }
+  .prf-modal > p {
+    font-size: .86rem; color: var(--text2,#8bacc8);
+    text-align: center; line-height: 1.6; margin-bottom: 22px;
+  }
+
+  .prf-mfield { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .prf-mfield label {
+    display: block; font-size: .72rem; font-weight: 700;
+    color: var(--text3,#4a6980);
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .prf-minp {
+    display: block; width: 100%; padding: 11px 13px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.15));
+    border-radius: 10px; color: var(--text,#e8f4ff);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .prf-minp::placeholder { color: var(--text3,#4a6980); opacity: .5; }
+  .prf-minp:focus { border-color: var(--accent,#4fffb0); box-shadow: 0 0 0 3px rgba(79,255,176,.1); }
+  .prf-minp-danger { border-color: rgba(255,79,123,.3); }
+  .prf-minp-danger:focus { border-color: var(--accent3,#ff4f7b); box-shadow: 0 0 0 3px rgba(255,79,123,.1); }
+
+  .prf-del-hint { font-size: .8rem; color: var(--text2,#8bacc8); margin-bottom: 6px; font-weight: 500; }
+  .prf-del-hint strong { color: var(--accent3,#ff4f7b); font-weight: 700; }
+
+  .prf-mbtns { display: flex; gap: 10px; margin-top: 6px; }
+  .btn-m-cancel {
+    flex: 1; padding: 12px;
+    background: var(--bg2,#0a1628);
+    border: 1px solid var(--border,rgba(79,255,176,.15));
+    border-radius: 10px; color: var(--text2,#8bacc8);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; font-weight: 600; cursor: pointer;
+    transition: border-color .18s, color .18s;
+  }
+  .btn-m-cancel:hover { border-color: var(--border2,rgba(79,255,176,.3)); color: var(--text,#e8f4ff); }
+  .btn-m-green {
+    flex: 1; padding: 12px;
+    background: var(--accent,#4fffb0); border: none; border-radius: 10px;
+    color: var(--btn-fg,#050d15);
+    font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; font-weight: 700; cursor: pointer;
+    transition: filter .18s;
+  }
+  .btn-m-green:hover { filter: brightness(1.08); }
+  .btn-m-red {
+    flex: 1; padding: 12px;
+    background: var(--accent3,#ff4f7b); border: none; border-radius: 10px;
+    color: #fff; font-family: var(--font,'Space Grotesk',sans-serif);
+    font-size: .88rem; font-weight: 700; cursor: pointer;
+    opacity: .35; transition: filter .18s, opacity .18s;
+  }
+  .btn-m-red.armed { opacity: 1; }
+  .btn-m-red.armed:hover { filter: brightness(1.1); }
+
+  /* ── responsive ── */
+  @media (max-width: 880px) {
+    .prf-grid { grid-template-columns: 1fr; }
+    .prf-sidebar { position: static; }
+    .prf-row2 { grid-template-columns: 1fr; }
+    .prf-bigstats { grid-template-columns: 1fr 1fr; }
+    .prf-quick { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) {
+    .prf-bigstats { grid-template-columns: 1fr; }
+    .prf-quick    { grid-template-columns: 1fr; }
+    .prf-modal    { padding: 24px 18px; }
+    .prf-page     { padding: 22px 14px 80px; }
+  }
+  </style>
+</head>
+
+<body class="app-page">
+
+<!-- ══════════════════════════════════════════════════════════
+     NAVBAR — exact same HTML structure as other pages
+══════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <a href="/app/home.html" class="nav-brand">
+    <div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>
+    <span>OnchoScan</span>
+  </a>
+  <div class="nav-links">
+    <a href="/app/home.html"      class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>Home</a>
+    <a href="/app/dashboard.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>Predict</a>
+    <a href="/app/batch.html"     class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>Batch</a>
+    <a href="/app/history.html"   class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>History</a>
+    <a href="/app/about.html"     class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>About</a>
+
+  </div>
+  <div class="nav-user">
+    <button class="theme-toggle" id="themeToggle" type="button" title="Switch theme">☀️</button>
+    <button class="notif-bell" id="notifBell" type="button" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-badge" id="notifBadge"></span>
+    </button>
+    <span class="user-avatar" id="navAvatar">?</span>
+    <span id="navUsername" class="nav-uname"></span>
+    <button type="button" class="btn-logout" id="logoutBtn">Sign out</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════════════════ -->
+<main class="prf-page">
+
+  <!-- hero -->
+  <div class="prf-hero">
+    <h1>My <em>Profile</em></h1>
+    <p>Manage your account, preferences, and clinical information.</p>
+  </div>
+
+  <div class="prf-grid">
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="prf-sidebar">
+
+      <!-- avatar -->
+      <div class="prf-av-wrap">
+        <div class="prf-av-circle" id="avCircle">?</div>
+        <button class="prf-av-btn" id="avBtn" type="button" title="Change profile photo">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+        </button>
+      </div>
+      <!-- hidden file input — MUST stay here but is invisible -->
+      <input type="file" id="avInput" accept="image/*" tabindex="-1" aria-hidden="true">
+
+      <div class="prf-sd-name" id="prfName">–</div>
+      <div class="prf-sd-handle" id="prfHandle">@–</div>
+      <div class="prf-role-badge prf-role-other" id="prfRoleBadge">User</div>
+
+      <!-- stat tiles -->
+      <div class="prf-tiles">
+        <div class="prf-tile"><div class="prf-tile-num" id="sdTotal">–</div><div class="prf-tile-lbl">Scans</div></div>
+        <div class="prf-tile"><div class="prf-tile-num" id="sdReports">–</div><div class="prf-tile-lbl">Reports</div></div>
+      </div>
+
+      <!-- member since -->
+      <div class="prf-since">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+        <span id="memberSince">…</span>
+      </div>
+
+      <!-- nav tabs -->
+      <nav class="prf-sidenav">
+        <button class="prf-tab" data-tab="overview" type="button">
+          <span class="prf-tab-ico">📊</span> Overview
+        </button>
+        <button class="prf-tab" data-tab="personal" type="button">
+          <span class="prf-tab-ico">👤</span> Personal Info
+        </button>
+        <button class="prf-tab" data-tab="prefs" type="button">
+          <span class="prf-tab-ico">⚙️</span> Preferences
+        </button>
+        <button class="prf-tab" data-tab="security" type="button">
+          <span class="prf-tab-ico">🔒</span> Security
+        </button>
+        <button class="prf-tab prf-tab-danger" data-tab="danger" type="button">
+          <span class="prf-tab-ico">⚠️</span> Danger Zone
+        </button>
+      </nav>
+
+    </aside>
+
+    <!-- ═══════════ PANELS ═══════════ -->
+    <div class="prf-panels">
+
+      <!-- ──────────────────────────────────────
+           OVERVIEW
+      ────────────────────────────────────── -->
+      <section class="prf-panel" id="pnl-overview">
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Scan Statistics</h3><p>Your overall usage overview</p></div>
+          <div class="prf-bigstats">
+            <div class="prf-bstat"><div class="prf-bstat-num c-green" id="stTotal">–</div><div class="prf-bstat-lbl">Total Scans</div></div>
+            <div class="prf-bstat"><div class="prf-bstat-num c-red"   id="stHigh">–</div><div class="prf-bstat-lbl">High Risk</div></div>
+            <div class="prf-bstat"><div class="prf-bstat-num c-cyan"  id="stLow">–</div><div class="prf-bstat-lbl">Low Risk</div></div>
+          </div>
+        </div>
+
+        <div class="prf-card">
+          <div class="prf-card-head-row">
+            <div><h3>Recent Scans</h3><p>Your last 6 analyses</p></div>
+            <a href="/app/history.html" style="font-size:.83rem;color:var(--accent,#4fffb0);font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0">View all →</a>
+          </div>
+          <div id="recentList"><p class="prf-empty">Loading…</p></div>
+        </div>
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Quick Actions</h3></div>
+          <div class="prf-quick">
+            <a class="prf-ql" href="/app/dashboard.html"><span class="prf-ql-ico">⚡</span> New Scan</a>
+            <a class="prf-ql" href="/app/batch.html"><span class="prf-ql-ico">📦</span> Batch Upload</a>
+            <a class="prf-ql" href="/app/history.html"><span class="prf-ql-ico">📋</span> History</a>
+            <a class="prf-ql" href="/app/about.html"><span class="prf-ql-ico">ℹ️</span> About</a>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────
+           PERSONAL INFO
+      ────────────────────────────────────── -->
+      <section class="prf-panel" id="pnl-personal">
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Personal Information</h3><p>Update your name, contact and clinical details</p></div>
+          <div class="prf-form">
+
+            <div class="prf-row2">
+              <div class="prf-field"><label>Full Name</label><input class="prf-inp" id="pfName" type="text" placeholder="Dr. Jane Smith"></div>
+              <div class="prf-field"><label>Username</label><input class="prf-inp" id="pfUser" type="text" readonly tabindex="-1"></div>
+            </div>
+
+            <div class="prf-row2">
+              <div class="prf-field"><label>Email Address</label><input class="prf-inp" id="pfEmail" type="email" placeholder="you@hospital.com"></div>
+              <div class="prf-field"><label>Phone Number</label><input class="prf-inp" id="pfPhone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+            </div>
+
+            <div class="prf-row2">
+              <div class="prf-field"><label>Date of Birth</label><input class="prf-inp" id="pfDob" type="date"></div>
+              <div class="prf-field"><label>Gender</label>
+                <select class="prf-inp" id="pfGender">
+                  <option value="">Select…</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="non-binary">Non-binary</option>
+                  <option value="prefer_not">Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="prf-row2">
+              <div class="prf-field"><label>Role / I am a…</label>
+                <select class="prf-inp" id="pfRole">
+                  <option value="">Select role…</option>
+                  <option value="doctor">Doctor / Clinician</option>
+                  <option value="patient">Patient</option>
+                  <option value="researcher">Researcher</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="prf-field"><label>Organization / Hospital</label><input class="prf-inp" id="pfOrg" type="text" placeholder="City Hospital, AIIMS…"></div>
+            </div>
+
+            <!-- specialization chips -->
+            <div class="prf-spec-sec" id="specSec">
+              <label>Specialization <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(select all that apply)</span></label>
+              <div class="prf-spec-wrap" id="specWrap"></div>
+            </div>
+
+            <div class="prf-row2">
+              <div class="prf-field"><label>City</label><input class="prf-inp" id="pfCity" type="text" placeholder="Hyderabad"></div>
+              <div class="prf-field"><label>Country</label><input class="prf-inp" id="pfCountry" type="text" placeholder="India"></div>
+            </div>
+
+            <div class="prf-field">
+              <label>Bio / About <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(max 400 chars)</span></label>
+              <textarea class="prf-inp prf-textarea" id="pfBio" maxlength="400" placeholder="Your clinical background or research interests…"></textarea>
+            </div>
+
+            <div class="prf-save-row">
+              <div class="prf-save-ok" id="pfSaveOk">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" style="flex-shrink:0"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Profile saved successfully!
+              </div>
+              <button class="btn-prf-save" id="pfSave" type="button">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="15" style="flex-shrink:0"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Save Changes
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────────────────────────────────
+           PREFERENCES
+      ────────────────────────────────────── -->
+      <section class="prf-panel" id="pnl-prefs">
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Notification Preferences</h3><p>Choose what alerts you receive</p></div>
+
+          <div class="prf-pref-row">
+            <div class="prf-pref-info"><h4>Scan complete notifications</h4><p>Toast alert when a prediction finishes</p></div>
+            <label class="prf-sw"><input type="checkbox" id="pref1"><span class="prf-sw-track"></span></label>
+          </div>
+          <div class="prf-pref-row">
+            <div class="prf-pref-info"><h4>Report ready notifications</h4><p>Alert when a PDF report has been generated</p></div>
+            <label class="prf-sw"><input type="checkbox" id="pref2"><span class="prf-sw-track"></span></label>
+          </div>
+          <div class="prf-pref-row">
+            <div class="prf-pref-info"><h4>High Risk alerts</h4><p>Extra-prominent toast for high-risk results</p></div>
+            <label class="prf-sw"><input type="checkbox" id="pref3"><span class="prf-sw-track"></span></label>
+          </div>
+        </div>
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Display Preferences</h3><p>Customize how OnchoScan looks</p></div>
+
+          <div class="prf-pref-row">
+            <div class="prf-pref-info"><h4>Compact result view</h4><p>Show condensed result cards after scanning</p></div>
+            <label class="prf-sw"><input type="checkbox" id="pref4"><span class="prf-sw-track"></span></label>
+          </div>
+          <div class="prf-pref-row">
+            <div class="prf-pref-info"><h4>Auto-open PDF reports</h4><p>Open the report in a new tab automatically</p></div>
+            <label class="prf-sw"><input type="checkbox" id="pref5"><span class="prf-sw-track"></span></label>
+          </div>
+        </div>
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Appearance</h3><p>Toggle between dark and light mode</p></div>
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:#ffb84f">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">App Theme</div>
+                <div class="prf-sec-sub">Dark mode · Light mode</div>
+              </div>
+            </div>
+            <button class="btn-prf-ghost" id="themeInPrefs" type="button">Toggle Theme</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────
+           SECURITY
+      ────────────────────────────────────── -->
+      <section class="prf-panel" id="pnl-security">
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Security Settings</h3><p>Manage your account security and sessions</p></div>
+
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:var(--accent,#4fffb0)">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="8" width="14" height="10" rx="2"/>
+                  <path d="M7 8V6a3 3 0 016 0v2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">Password</div>
+                <div class="prf-sec-sub">Update your login password</div>
+              </div>
+            </div>
+            <button class="btn-prf-ghost" id="openPwModal" type="button">Change Password</button>
+          </div>
+
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:var(--accent,#4fffb0)">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">Last Login</div>
+                <div class="prf-sec-sub" id="lastLogin">–</div>
+              </div>
+            </div>
+            <span class="prf-status-ok">✓ Active</span>
+          </div>
+
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:var(--accent2,#00d4ff)">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">Session Token</div>
+                <div class="prf-sec-sub">JWT — valid for 24 hours</div>
+              </div>
+            </div>
+            <span class="prf-status-ok">✓ Valid</span>
+          </div>
+
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:#ffb84f">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">Two-Factor Authentication</div>
+                <div class="prf-sec-sub">Extra security layer — coming soon</div>
+              </div>
+            </div>
+            <button class="btn-prf-ghost" disabled type="button">Enable (Soon)</button>
+          </div>
+
+        </div>
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Active Sessions</h3><p>Devices currently logged in</p></div>
+          <div class="prf-sec-row">
+            <div class="prf-sec-left">
+              <div class="prf-sec-icon" style="color:var(--accent,#4fffb0)">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <div class="prf-sec-title">Current device · Web Browser</div>
+                <div class="prf-sec-sub">This session — active right now</div>
+              </div>
+            </div>
+            <span class="prf-status-ok">● Now</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────────────────────────────────
+           DANGER ZONE
+      ────────────────────────────────────── -->
+      <section class="prf-panel" id="pnl-danger">
+
+        <div class="prf-card">
+          <div class="prf-card-head"><h3>Data Management</h3><p>Control your locally stored data</p></div>
+          <div class="prf-data-row">
+            <div>
+              <h5>Export My Data</h5>
+              <p>Download a JSON file of your profile and preferences stored in this browser.</p>
+            </div>
+            <button class="btn-prf-ghost" id="exportBtn" type="button">⬇ Export</button>
+          </div>
+        </div>
+
+        <div class="prf-danger-zone">
+          <h4>
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            Danger Zone
+          </h4>
+
+          <div class="prf-danger-row">
+            <div>
+              <h5>Clear Local Data</h5>
+              <p>Wipes your avatar, profile info, and preferences from this browser. Does <strong>not</strong> delete your server account.</p>
+            </div>
+            <button class="btn-prf-danger" id="clearBtn" type="button">Clear</button>
+          </div>
+
+          <div class="prf-danger-row">
+            <div>
+              <h5>Delete Account</h5>
+              <p>Permanently deletes your OnchoScan account and all scan history. This action <strong style="color:var(--accent3,#ff4f7b)">cannot be undone</strong>.</p>
+            </div>
+            <button class="btn-prf-danger" id="openDelModal" type="button">Delete Account</button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div><!-- /panels -->
+  </div><!-- /grid -->
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>
+      OnchoScan
+    </div>
+    <p class="footer-disclaimer">⚠ For research and educational use only.</p>
+    <p class="footer-copy">© 2025 OnchoScan · Powered by ResNet18 + Grad-CAM</p>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════
+     CHANGE PASSWORD MODAL
+══════════════════════════════════════════════════════════ -->
+<div class="prf-modal-overlay" id="pwModal" role="dialog" aria-modal="true">
+  <div class="prf-modal">
+    <div class="prf-modal-ico green">🔒</div>
+    <h3>Change Password</h3>
+    <p>Enter your current password and choose a new one (min. 6 characters).</p>
+    <div class="prf-mfield">
+      <label>Current Password</label>
+      <input class="prf-minp" id="pwCur" type="password" placeholder="Current password" autocomplete="current-password">
+    </div>
+    <div class="prf-mfield">
+      <label>New Password</label>
+      <input class="prf-minp" id="pwNew" type="password" placeholder="Min. 6 characters" autocomplete="new-password">
+    </div>
+    <div class="prf-mfield">
+      <label>Confirm New Password</label>
+      <input class="prf-minp" id="pwCnf" type="password" placeholder="Repeat new password" autocomplete="new-password">
+    </div>
+    <div class="prf-mbtns">
+      <button class="btn-m-cancel" id="pwCancel" type="button">Cancel</button>
+      <button class="btn-m-green"  id="pwSave"   type="button">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     DELETE ACCOUNT MODAL
+══════════════════════════════════════════════════════════ -->
+<div class="prf-modal-overlay" id="delModal" role="dialog" aria-modal="true">
+  <div class="prf-modal prf-modal-danger">
+    <div class="prf-modal-ico red">⚠️</div>
+    <h3>Delete Account</h3>
+    <p>This will permanently delete your account and all scan history. This action <strong style="color:var(--accent3,#ff4f7b)">cannot be reversed</strong>.</p>
+    <p class="prf-del-hint">Type <strong id="delHint">your username</strong> to confirm:</p>
+    <input class="prf-minp prf-minp-danger" id="delInput" type="text" placeholder="Type to confirm…" autocomplete="off" style="margin-bottom:18px">
+    <div class="prf-mbtns">
+      <button class="btn-m-cancel" id="delCancel"  type="button">Cancel</button>
+      <button class="btn-m-red"    id="delConfirm" type="button">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- scripts: order matters — app.js first, then features.js, then profile.js last -->
+<script src="app.js"></script>
+<script src="features.js"></script>
+<script src="profile.js"></script>
+</body>
+</html>

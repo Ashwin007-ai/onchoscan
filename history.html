@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* Prevent theme flash on load */
+(function(){
+  if(localStorage.getItem("oncho_theme")==="light")
+    document.documentElement.classList.add("preload-light");
+})();
+</script>
+<style>
+html.preload-light body { background:#f2f8f5 !important; }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnchoScan – History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="app-page">
+
+<nav class="navbar">
+  <a href="/app/dashboard.html" class="nav-brand">
+    <div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>
+    <span>OnchoScan</span>
+  </a>
+  <div class="nav-links">
+    <a href="/app/home.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>Home</a>    <a href="/app/dashboard.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>Predict</a>
+    <a href="/app/batch.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>Batch</a>
+    <a href="/app/history.html" class="nav-link active"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>History</a>
+
+    <a href="/app/about.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>About</a>
+  </div>
+  <div class="nav-user">
+        <button class="theme-toggle" id="themeToggle" type="button" title="Switch to light mode">☀️</button>
+    <button class="notif-bell" id="notifBell" type="button" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-badge" id="notifBadge"></span>
+    </button>
+    <span class="user-avatar" id="navAvatar">?</span>
+    <a href="/app/profile.html" id="navUsername" class="nav-uname" style="text-decoration:none;cursor:pointer" title="My Profile"></a>
+    <button type="button" class="btn-logout" id="logoutBtn">Sign out</button>
+  </div>
+</nav>
+
+<main class="main-container">
+  <section class="page-hero">
+    <h1>Prediction <em>History</em></h1>
+    <p>All your past analyses in one place.</p>
+  </section>
+  <div class="card" style="max-width:900px;margin:0 auto">
+    <div class="card-header">
+      <h3>Past Analyses</h3>
+      <span id="historyCount" class="count-badge">Loading…</span>
+    </div>
+    <div id="historyContent">
+      <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading…</p></div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer"><div class="footer-inner">
+  <div class="footer-brand"><div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>OnchoScan</div>
+  <p class="footer-disclaimer">⚠ For research and educational use only.</p>
+  <p class="footer-copy">© 2025 OnchoScan · Powered by ResNet18 + Grad-CAM</p>
+</div></footer>
+
+<script src="app.js"></script>
+<script>
+(async function() {
+  var tk = localStorage.getItem("oncho_token");
+  if (!tk) return;
+  try {
+    var res  = await fetch("http://127.0.0.1:8000/history", { headers: { "Authorization": "Bearer " + tk } });
+    if (res.status === 401) { window.logout(); return; }
+    var data = await res.json();
+    var list = data.history || [];
+    document.getElementById("historyCount").textContent = list.length + " record" + (list.length !== 1 ? "s" : "");
+    if (list.length === 0) {
+      document.getElementById("historyContent").innerHTML = '<div class="empty-state"><div class="empty-icon">🔬</div><p>No predictions yet.</p><a href="/app/dashboard.html" class="btn-primary" style="display:inline-flex;margin-top:12px">Go to Dashboard</a></div>';
+      return;
+    }
+    document.getElementById("historyContent").innerHTML = list.map(function(r) {
+      var rc = r.risk_level === "High Risk" ? "high" : r.risk_level === "Medium Risk" ? "medium" : "low";
+      var dt = new Date(r.timestamp).toLocaleString();
+      var isBatch = r.analysis_type === 'batch';
+      var typeIcon = r.cancer_type === 'brain' ? '🧠' : '🔬';
+      var badge = isBatch
+        ? '<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(0,212,255,0.12);color:#00d4ff;border:1px solid rgba(0,212,255,0.25);margin-left:6px">BATCH</span>'
+        : '<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(79,255,176,0.1);color:#4fffb0;border:1px solid rgba(79,255,176,0.2);margin-left:6px">SINGLE</span>';
+      return '<div class="history-row">' +
+        '<div class="hist-icon">' + typeIcon + '</div>' +
+        '<div class="hist-info"><strong>' + r.prediction + badge + '</strong><small>' + r.cancer_type.toUpperCase() + ' · ' + dt + '</small></div>' +
+        '<div class="hist-conf">' + r.confidence + '%</div>' +
+        '<div class="risk-chip ' + rc + '">' + r.risk_level + '</div>' +
+        '<a href="http://127.0.0.1:8000/' + r.report + '" target="_blank" class="hist-download">⬇ PDF</a>' +
+      '</div>';
+    }).join("");
+  } catch(e) {
+    document.getElementById("historyCount").textContent = "Error";
+    document.getElementById("historyContent").innerHTML = "<p style='color:#e55;padding:20px'>Failed to load. Is the backend running?</p>";
+  }
+})();
+</script>
+<script src="features.js"></script>
+</body>
+</html>

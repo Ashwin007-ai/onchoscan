@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* Prevent theme flash on load */
+(function(){
+  if(localStorage.getItem("oncho_theme")==="light")
+    document.documentElement.classList.add("preload-light");
+})();
+</script>
+<style>
+html.preload-light body { background:#f2f8f5 !important; }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnchoScan – About</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="app-page">
+
+<nav class="navbar">
+  <a href="/app/dashboard.html" class="nav-brand">
+    <div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>
+    <span>OnchoScan</span>
+  </a>
+  <div class="nav-links">
+    <a href="/app/home.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>Home</a>
+    <a href="/app/dashboard.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>Predict</a>
+    <a href="/app/batch.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>Batch</a>
+    <a href="/app/history.html" class="nav-link"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>History</a>
+
+    <a href="/app/about.html" class="nav-link active"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>About</a>
+  </div>
+  <div class="nav-user">
+        <button class="theme-toggle" id="themeToggle" type="button" title="Switch to light mode">☀️</button>
+    <button class="notif-bell" id="notifBell" type="button" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-badge" id="notifBadge"></span>
+    </button>
+    <span class="user-avatar" id="navAvatar">?</span>
+    <a href="/app/profile.html" id="navUsername" class="nav-uname" style="text-decoration:none;cursor:pointer" title="My Profile"></a>
+    <button type="button" class="btn-logout" id="logoutBtn">Sign out</button>
+  </div>
+</nav>
+
+<main class="main-container">
+  <section class="page-hero">
+    <h1>System <em>Information</em></h1>
+    <p>Technical details, models, datasets, and pipeline architecture.</p>
+  </section>
+  <div class="about-grid">
+    <div class="card about-card"><div class="about-icon">🧬</div><h3>About OnchoScan</h3><p>OnchoScan is an AI-assisted cancer screening platform using deep learning CNNs to detect brain tumors and skin cancer from medical images. Provides confidence scores, risk assessments, Grad-CAM heatmaps, and clinical recommendations in seconds.</p></div>
+    <div class="card about-card"><div class="about-icon">🤖</div><h3>AI Models</h3><div class="model-row"><div class="model-chip"><strong>Brain Tumor</strong><span>ResNet-18 · 4 classes</span><small>Glioma · Meningioma · No Tumor · Pituitary</small></div><div class="model-chip"><strong>Skin Cancer</strong><span>ResNet-18 · 2 classes</span><small>Benign · Malignant</small></div></div></div>
+    <div class="card about-card"><div class="about-icon">📊</div><h3>Datasets</h3><div class="dataset-item"><div class="ds-dot brain"></div><div><strong>Brain MRI Dataset</strong><p>Multi-class tumor MRI dataset with glioma, meningioma, pituitary and healthy scans.</p></div></div><div class="dataset-item"><div class="ds-dot skin"></div><div><strong>HAM10000</strong><p>10,000+ dermatoscopic skin lesion images for binary classification.</p></div></div></div>
+    <div class="card about-card"><div class="about-icon">🔬</div><h3>Explainability (Grad-CAM)</h3><p>Gradient-weighted Class Activation Mapping highlights which image regions influenced the model's decision, making AI interpretable for clinical review.</p></div>
+    <div class="card about-card"><div class="about-icon">⚙️</div><h3>System Pipeline</h3><div class="pipeline"><div class="pipe-step">Upload</div><div class="pipe-arrow">→</div><div class="pipe-step">Preprocess</div><div class="pipe-arrow">→</div><div class="pipe-step">Predict</div><div class="pipe-arrow">→</div><div class="pipe-step">Grad-CAM</div><div class="pipe-arrow">→</div><div class="pipe-step">Report</div></div><div class="tech-stack"><span class="tech-tag">FastAPI</span><span class="tech-tag">PyTorch</span><span class="tech-tag">ResNet-18</span><span class="tech-tag">Grad-CAM</span><span class="tech-tag">ReportLab</span><span class="tech-tag">JWT Auth</span></div></div>
+    <div class="card about-card disclaimer-card"><div class="about-icon">⚠️</div><h3>Medical Disclaimer</h3><p>OnchoScan is an <strong>AI-assisted research and educational tool</strong>. It is NOT intended to replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional.</p></div>
+  </div>
+</main>
+
+<footer class="footer"><div class="footer-inner">
+  <div class="footer-brand"><div class="logo-icon sm"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#4fffb0" stroke-width="2"/><path d="M12 20 Q16 12 20 20 Q24 28 28 20" stroke="#4fffb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#4fffb0"/></svg></div>OnchoScan</div>
+  <p class="footer-disclaimer">⚠ For research and educational use only.</p>
+  <p class="footer-copy">© 2025 OnchoScan · Powered by ResNet18 + Grad-CAM</p>
+</div></footer>
+
+<script src="app.js"></script>
+<script src="features.js"></script>
+</body>
+</html>
