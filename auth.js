@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000";
+const API = "https://onchoscan-api.onrender.com";
 
 // Bounce to dashboard only if token exists and we are on login page
 (function() {

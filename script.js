@@ -20,7 +20,7 @@ async function runPrediction(){
 
     try{
 
-        let response = await fetch("http://127.0.0.1:8000/predict", {
+        let response = await fetch("https://onchoscan-api.onrender.com/predict", {
             method: "POST",
             body: formData
         });
@@ -52,12 +52,12 @@ async function runPrediction(){
 
             <div class="card">
                 <h2>Explainable AI (Grad-CAM)</h2>
-                <img src="http://127.0.0.1:8000/${result.heatmap}" width="300"/>
+                <img src="https://onchoscan-api.onrender.com/${result.heatmap}" width="300"/>
             </div>
 
             <div class="card">
                 <h2>Download Report</h2>
-                <a href="http://127.0.0.1:8000/${result.report}" download>
+                <a href="https://onchoscan-api.onrender.com/${result.report}" download>
                     Download Diagnostic Report (PDF)
                 </a>
             </div>

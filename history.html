@@ -72,7 +72,7 @@ html.preload-light body { background:#f2f8f5 !important; }
   var tk = localStorage.getItem("oncho_token");
   if (!tk) return;
   try {
-    var res  = await fetch("http://127.0.0.1:8000/history", { headers: { "Authorization": "Bearer " + tk } });
+    var res  = await fetch("https://onchoscan-api.onrender.com/history", { headers: { "Authorization": "Bearer " + tk } });
     if (res.status === 401) { window.logout(); return; }
     var data = await res.json();
     var list = data.history || [];
@@ -94,7 +94,7 @@ html.preload-light body { background:#f2f8f5 !important; }
         '<div class="hist-info"><strong>' + r.prediction + badge + '</strong><small>' + r.cancer_type.toUpperCase() + ' · ' + dt + '</small></div>' +
         '<div class="hist-conf">' + r.confidence + '%</div>' +
         '<div class="risk-chip ' + rc + '">' + r.risk_level + '</div>' +
-        '<a href="http://127.0.0.1:8000/' + r.report + '" target="_blank" class="hist-download">⬇ PDF</a>' +
+        '<a href="https://onchoscan-api.onrender.com/' + r.report + '" target="_blank" class="hist-download">⬇ PDF</a>' +
       '</div>';
     }).join("");
   } catch(e) {
